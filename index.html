@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f0f0f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg">
+<title>CleanTube</title>
+<style>
+:root{--bg:#0f0f0f;--fg:#f1f1f1;--mut:#aaa;--card:#272727;--acc:#ff2d55;--hh:56px;--pw:min(100vw,1000px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,"Noto Sans Bengali",sans-serif}
+button,select,textarea,input{font:inherit}
+header{position:sticky;top:0;z-index:20;height:var(--hh);background:var(--bg);display:flex;align-items:center;gap:8px;padding:0 10px}
+.logo{font-weight:700;cursor:pointer;white-space:nowrap}.logo b{color:var(--acc)}
+#sf{flex:1;display:flex;min-width:0}
+#q{flex:1;min-width:0;background:#121212;border:1px solid #303030;color:var(--fg);padding:9px 14px;border-radius:20px 0 0 20px;font-size:15px}
+#sf button{border:1px solid #303030;border-left:0;background:#222;color:var(--fg);padding:0 14px;border-radius:0 20px 20px 0}
+.ib{background:none;border:0;color:var(--fg);font-size:20px;padding:6px}
+#nav{display:flex;gap:8px;overflow-x:auto;padding:6px 10px;position:sticky;top:var(--hh);z-index:15;background:var(--bg);scrollbar-width:none}
+.chip{white-space:nowrap;background:var(--card);color:var(--fg);border:0;border-radius:8px;padding:7px 12px;font-size:14px;cursor:pointer}
+.chip.on{background:var(--fg);color:#000}
+#head{padding:6px 12px}
+#head .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;padding:10px 10px 100px}
+.card{cursor:pointer}
+.th{position:relative;aspect-ratio:16/9;background:#222;border-radius:12px;overflow:hidden}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.dur{position:absolute;right:6px;bottom:6px;background:#000c;padding:1px 5px;border-radius:4px;font-size:12px}
+.meta{display:flex;gap:10px;margin-top:8px}
+.av{width:36px;height:36px;border-radius:50%;background:#333;flex:none;object-fit:cover;cursor:pointer}
+.t{font-size:14px;line-height:1.35;max-height:2.7em;overflow:hidden}
+.s{font-size:12px;color:var(--mut);margin-top:2px}
+.s span[data-ch]{cursor:pointer}
+#msg{padding:24px;text-align:center;color:var(--mut)}
+#more{display:block;margin:0 auto 110px}
+/* player */
+#pw{position:fixed;z-index:30;background:#000;display:none}
+#pw.full{display:block;top:var(--hh);left:50%;transform:translateX(-50%);width:var(--pw);aspect-ratio:16/9}
+#pw.mini{display:flex;bottom:0;left:0;right:0;height:64px;background:#212121;align-items:center;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -2px 10px #000a}
+#vbox{position:relative;width:100%;height:100%;background:#000}
+#pw.mini #vbox{width:114px;height:64px;flex:none}
+video{width:100%;height:100%;display:block;background:#000}
+#minb{position:absolute;top:6px;left:6px;z-index:2;background:#0009;border:0;color:#fff;border-radius:50%;width:34px;height:34px;font-size:18px}
+#pw.mini #minb{display:none}
+#aov{position:absolute;inset:0;background:#000d;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:1;font-size:14px}
+#pw.mini #aov{font-size:0}#pw.mini #aov button{display:none}
+#mi{display:none}
+#pw.mini #mi{display:flex;flex:1;min-width:0;align-items:center;gap:4px;padding:0 6px 0 10px}
+#mt{flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+#mi button{background:none;border:0;color:var(--fg);font-size:22px;padding:8px}
+/* watch */
+#spacer{height:calc(var(--pw)*9/16)}
+#watch{max-width:1000px;margin:0 auto}
+#ctl{display:flex;gap:8px;flex-wrap:wrap;padding:10px 12px;align-items:center}
+#ctl select{background:var(--card);color:var(--fg);border:0;border-radius:8px;padding:7px 8px}
+.chip.on2{background:var(--acc)}
+.rate{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+#rin{width:68px;background:var(--card);color:var(--fg);border:0;border-radius:8px;padding:7px 6px;text-align:center}
+#wi{padding:0 12px}
+#wt{font-size:18px;font-weight:600;margin:6px 0}
+#wc{display:flex;align-items:center;gap:10px;margin:10px 0}
+#wc .grow{flex:1;min-width:0}
+#wd{white-space:pre-wrap;word-break:break-word;font-size:14px;background:var(--card);border-radius:12px;padding:10px;max-height:5.5em;overflow:hidden;cursor:pointer}
+#wd.open{max-height:none}
+#rel{display:grid;grid-template-columns:1fr;gap:16px;padding:16px 12px 120px}
+dialog{background:#1c1c1c;color:var(--fg);border:1px solid #333;border-radius:12px;max-width:440px;width:92vw}
+dialog::backdrop{background:#000a}
+textarea{width:100%;background:#111;color:var(--fg);border:1px solid #333;border-radius:8px;padding:8px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo" id="logo">▶ <b>Clean</b>Tube</div>
+  <form id="sf"><input type="search" id="q" placeholder="সার্চ করুন বা YouTube লিংক দিন" autocomplete="off"><button>🔍</button></form>
+  <button class="ib" id="setb" title="সেটিংস">⚙</button>
+</header>
+<div id="nav"></div>
+
+<main id="listView">
+  <div id="head"></div>
+  <div id="grid"></div>
+  <div id="msg"></div>
+  <button id="more" class="chip" hidden>আরও দেখুন</button>
+</main>
+
+<section id="watch" hidden>
+  <div id="spacer"></div>
+  <div id="ctl">
+    <button class="chip" id="pipb">⧉ পপ-আউট (PiP)</button>
+    <button class="chip" id="audb">🎧 অডিও মোড</button>
+    <select id="qsel" title="কোয়ালিটি"></select>
+    <span class="rate"><button class="chip" id="rm">−</button><input id="rin" type="number" min="0.25" max="4" step="0.05" value="1" inputmode="decimal" title="কাস্টম স্পিড"><button class="chip" id="rp">+</button><span id="rq" class="rate"></span></span>
+  </div>
+  <div id="wi">
+    <div id="wt"></div>
+    <div id="wc"></div>
+    <div id="wd" hidden></div>
+  </div>
+  <div id="rel"></div>
+</section>
+
+<div id="pw">
+  <div id="vbox">
+    <video id="v" playsinline controls></video>
+    <button id="minb" title="ছোট করুন">⌄</button>
+    <div id="aov" hidden>
+      <div>🎧 অডিও মোড চালু</div>
+      <div><button class="chip" id="aplay">⏯ চালু/বন্ধ</button> <button class="chip" id="avid">🎬 ভিডিওতে ফিরুন</button></div>
+    </div>
+  </div>
+  <div id="mi"><div id="mt"></div><button id="mp">⏸</button><button id="mx">✕</button></div>
+</div>
+<audio id="a"></audio>
+
+<dialog id="set">
+  <h3 style="margin-top:0">সেটিংস</h3>
+  <p class="s">বর্তমান সার্ভার: <span id="curb">—</span></p>
+  <p class="s">নিজের Piped API সার্ভার (প্রতি লাইনে একটি। যেমন: https://pipedapi.example.com)</p>
+  <textarea id="cust" rows="4"></textarea>
+  <p class="s">Shorts লুকাতে: এর চেয়ে ছোট ভিডিও (সেকেন্ড) দেখানো হবে না। ডিফল্ট ১৮০ (৩ মিনিট), কারণ Shorts এখন ৩ মিনিট পর্যন্ত হয়। ০ দিলে ফিল্টার বন্ধ।</p>
+  <input id="mind" type="number" min="0" max="1800" step="30" style="width:100px;background:#111;color:var(--fg);border:1px solid #333;border-radius:8px;padding:6px">
+  <p style="display:flex;gap:8px"><button class="chip" id="sv">সেভ</button><button class="chip" id="cl">বন্ধ</button></p>
+</dialog>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const LS=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch{return d}};
+const SV=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const su=u=>/^https?:\/\//.test(u||'')?u:'';
+const enc=encodeURIComponent;
+const vidId=u=>{try{return new URL(u,'https://x.y').searchParams.get('v')}catch{return null}};
+const chId=u=>(u||'').split('/').filter(Boolean).pop()||'';
+const fmtD=s=>{if(s<0)return'LIVE';if(!s)return'';const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60,p=n=>String(n).padStart(2,'0');return h?`${h}:${p(m)}:${p(x)}`:`${m}:${p(x)}`};
+const nf=(()=>{try{return new Intl.NumberFormat('bn',{notation:'compact'})}catch{return new Intl.NumberFormat()}})();
+const fmtN=n=>(typeof n==='number'&&n>=0)?nf.format(n):'';
+
+/* ---------- Piped API with automatic failover ---------- */
+const FALLBACK=['https://pipedapi.kavin.rocks','https://pipedapi.adminforge.de','https://api.piped.private.coffee','https://pipedapi.leptons.xyz','https://pipedapi.darkness.services'];
+const bad=new Map();
+let pool=null;
+function fetchT(url,ms=8000){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);return fetch(url,{signal:c.signal}).finally(()=>clearTimeout(t))}
+async function getPool(){
+  let l=(LS('custom','')||'').split(/\s+/).filter(Boolean);
+  try{const j=await(await fetchT('https://piped-instances.kavin.rocks/',6000)).json();l.push(...j.map(x=>x.api_url).filter(Boolean))}catch{}
+  l.push(...FALLBACK);
+  return [...new Set(l.map(u=>u.replace(/\/+$/,'')))];
+}
+async function api(path){
+  if(!pool)pool=await getPool();
+  const order=[];const cur=LS('base',null);
+  if(cur)order.push(cur);
+  pool.forEach(u=>{if(!order.includes(u))order.push(u)});
+  let cand=order.filter(u=>(bad.get(u)||0)<Date.now());
+  if(!cand.length){bad.clear();cand=order}
+  let err;
+  for(const u of cand.slice(0,6)){
+    try{
+      const r=await fetchT(u+path);
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const j=await r.json();
+      if(j&&j.error)throw new Error(j.message||j.error);
+      SV('base',u);return j;
+    }catch(e){err=e;bad.set(u,Date.now()+120000)}
+  }
+  throw err||new Error('কোনো সার্ভার পাওয়া যায়নি');
+}
+
+/* ---------- list views ---------- */
+const okItem=i=>i&&(!i.type||i.type==='stream')&&!i.isShort&&!(i.url||'').includes('/shorts/')&&!/#shorts?\b/i.test(i.title||'')&&(i.duration===-1||i.duration>LS('minDur',180));
+const grid=$('#grid'),head=$('#head'),msg=$('#msg'),moreBtn=$('#more');
+let cur=null,lastY=0;
+
+function card(i){
+  const d=document.createElement('div');d.className='card';d.dataset.id=vidId(i.url)||'';d._item=i;
+  const ch=esc(chId(i.uploaderUrl));
+  d.innerHTML=`<div class="th"><img loading="lazy" src="${esc(su(i.thumbnail))}" alt=""><span class="dur">${esc(fmtD(i.duration))}</span></div>
+  <div class="meta"><img class="av" data-ch="${ch}" src="${esc(su(i.uploaderAvatar))}" alt="">
+  <div><div class="t">${esc(i.title)}</div><div class="s"><span data-ch="${ch}">${esc(i.uploaderName)}${i.uploaderVerified?' ✓':''}</span> · ${esc(fmtN(i.views))} ভিউ · ${esc(i.uploadedDate||'')}</div></div></div>`;
+  return d;
+}
+document.addEventListener('click',e=>{
+  const ch=e.target.closest('[data-ch]');
+  if(ch&&ch.dataset.ch){e.stopPropagation();openChannel(ch.dataset.ch);return}
+  const c=e.target.closest('.card');
+  if(c&&c.dataset.id)play(c.dataset.id,c._item);
+});
+
+function show(w){
+  const isW=w==='watch';
+  $('#watch').hidden=!isW;$('#listView').hidden=isW;$('#nav').hidden=isW;
+}
+function toList(){
+  if(S&&pw.className==='full')setMode('mini');
+  show('list');
+}
+async function openList(fetcher){
+  toList();window.scrollTo(0,0);
+  grid.innerHTML='';head.innerHTML='';setMsg('লোড হচ্ছে…');moreBtn.hidden=true;
+  cur={fetcher,next:null,busy:false};
+  await more();
+}
+function setMsg(t){msg.textContent=t}
+async function more(){
+  if(!cur||cur.busy)return;
+  const c=cur;c.busy=true;
+  try{
+    const r=await c.fetcher(c.next);
+    if(c!==cur)return;
+    c.next=r.next||null;
+    (r.items||[]).filter(okItem).forEach(i=>grid.append(card(i)));
+    setMsg(grid.children.length?'':'কিছু পাওয়া যায়নি');
+  }catch(e){
+    if(c===cur)setMsg('লোড করা যায়নি ('+e.message+'). ⚙ থেকে অন্য সার্ভার দিন বা একটু পরে চেষ্টা করুন।');
+  }
+  c.busy=false;
+  if(c===cur)moreBtn.hidden=!c.next;
+}
+moreBtn.onclick=more;
+new IntersectionObserver(es=>{if(es[0].isIntersecting)more()},{rootMargin:'500px'}).observe(moreBtn);
+
+const searchF=q=>async tok=>{
+  const j=tok?await api(`/nextpage/search?nextpage=${enc(tok)}&q=${enc(q)}&filter=videos`):await api(`/search?q=${enc(q)}&filter=videos`);
+  return{items:j.items,next:j.nextpage};
+};
+const trendF=async()=>{
+  try{const j=await api('/trending?region=BD');if(Array.isArray(j)&&j.filter(okItem).length)return{items:j}}catch{}
+  return searchF('trending videos today')();
+};
+const channelF=id=>async tok=>{
+  const j=tok?await api(`/nextpage/channel/${enc(id)}?nextpage=${enc(tok)}`):await api('/channel/'+enc(id));
+  if(!tok)channelHead(id,j);
+  const items=(j.relatedStreams||[]).map(i=>({...i,uploaderName:i.uploaderName||j.name,uploaderAvatar:i.uploaderAvatar||j.avatarUrl,uploaderUrl:'/channel/'+id}));
+  return{items,next:j.nextpage};
+};
+const subsF=async()=>{
+  const subs=LS('subs',[]);
+  head.innerHTML=subs.length?`<div class="row">${subs.map(s=>`<button class="chip" data-ch="${esc(s.id)}">${esc(s.name)}</button>`).join('')}</div>`:'';
+  if(!subs.length)return{items:[]};
+  const res=await Promise.allSettled(subs.slice(0,15).map(s=>api('/channel/'+enc(s.id)).then(j=>(j.relatedStreams||[]).slice(0,8).map(i=>({...i,uploaderName:i.uploaderName||j.name,uploaderAvatar:i.uploaderAvatar||j.avatarUrl,uploaderUrl:'/channel/'+s.id})))));
+  return{items:res.flatMap(r=>r.status==='fulfilled'?r.value:[]).sort((a,b)=>(b.uploaded||0)-(a.uploaded||0))};
+};
+const histF=async()=>{
+  head.innerHTML='<div class="row"><button class="chip" id="clh">ইতিহাস মুছুন</button></div>';
+  $('#clh').onclick=()=>{SV('hist',[]);grid.innerHTML='';setMsg('কিছু পাওয়া যায়নি')};
+  return{items:LS('hist',[]).slice().reverse()};
+};
+
+function isSub(id){return LS('subs',[]).some(s=>s.id===id)}
+function toggleSub(id,name,avatar){
+  let s=LS('subs',[]);
+  s=isSub(id)?s.filter(x=>x.id!==id):[...s,{id,name,avatar}];
+  SV('subs',s);
+}
+function subBtn(id,name,avatar){
+  const b=document.createElement('button');b.className='chip';
+  const upd=()=>{b.textContent=isSub(id)?'✓ সাবস্ক্রাইবড':'সাবস্ক্রাইব';b.classList.toggle('on',!isSub(id))};
+  upd();b.onclick=e=>{e.stopPropagation();toggleSub(id,name,avatar);upd()};
+  return b;
+}
+function channelHead(id,j){
+  head.innerHTML=`<div class="row"><img class="av" style="width:56px;height:56px;cursor:default" src="${esc(su(j.avatarUrl))}" alt=""><div><div style="font-size:18px;font-weight:600">${esc(j.name)}</div><div class="s">${esc(fmtN(j.subscriberCount))} সাবস্ক্রাইবার</div></div></div>`;
+  head.querySelector('.row').append(subBtn(id,j.name,j.avatarUrl));
+}
+const openChannel=id=>openList(channelF(id));
+
+/* nav chips */
+const CH=[
+  {n:'🔥 ট্রেন্ডিং',f:()=>trendF},
+  {n:'সাবস্ক্রিপশন',f:()=>subsF},
+  {n:'ইতিহাস',f:()=>histF},
+  {n:'গান',f:()=>searchF('bangla song')},
+  {n:'গেমিং',f:()=>searchF('gaming')},
+  {n:'খবর',f:()=>searchF('bangla news')},
+  {n:'লাইভ',f:()=>searchF('live')},
+  {n:'শিক্ষা',f:()=>searchF('education')},
+  {n:'রান্না',f:()=>searchF('recipe')}
+];
+CH.forEach((c,k)=>{
+  const b=document.createElement('button');b.className='chip';b.textContent=c.n;
+  b.onclick=()=>{document.querySelectorAll('#nav .chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');openList(c.f())};
+  $('#nav').append(b);
+});
+$('#logo').onclick=()=>$('#nav .chip').click();
+
+$('#sf').onsubmit=e=>{
+  e.preventDefault();
+  const q=$('#q').value.trim();if(!q)return;
+  const m=q.match(/(?:[?&]v=|youtu\.be\/)([\w-]{11})/)||(/^[\w-]{11}$/.test(q)?[0,q]:null);
+  document.querySelectorAll('#nav .chip').forEach(x=>x.classList.remove('on'));
+  $('#q').blur();
+  if(m)play(m[1]);else openList(searchF(q));
+};
+
+/* ---------- player ---------- */
+const pw=$('#pw'),v=$('#v'),a=$('#a'),qsel=$('#qsel');
+let S=null,tok=0,aUrl='',opts=[],audioMode=false,autoAudio=false,wantPlay=false,hls=null,hlsLoad=null,rate=LS('rate',1);
+const el=()=>audioMode?a:v;
+
+function setMode(m){pw.className=m;v.controls=(m==='full')}
+function stopAll(){v.pause();a.pause();audioMode=false;autoAudio=false;wantPlay=false;updBtn();if(hls){hls.destroy();hls=null}}
+function updBtn(){$('#aov').hidden=!audioMode;$('#audb').classList.toggle('on2',audioMode)}
+function loadHls(){
+  if(window.Hls)return Promise.resolve();
+  return hlsLoad||(hlsLoad=new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.15/hls.min.js';s.onload=res;s.onerror=rej;document.head.append(s)}));
+}
+async function loadVideo(o,t,autoplay){
+  if(hls){hls.destroy();hls=null}
+  if(o.hls&&!v.canPlayType('application/vnd.apple.mpegurl')){
+    await loadHls();hls=new Hls();hls.loadSource(o.url);hls.attachMedia(v);
+  }else v.src=o.url;
+  applyRate();
+  if(t)v.addEventListener('loadedmetadata',()=>{v.currentTime=t},{once:true});
+  if(autoplay)v.play().catch(()=>{});
+}
+
+async function play(id,item){
+  const my=++tok;
+  if(!$('#listView').hidden)lastY=scrollY;
+  if(history.state?.w!==1)history.pushState({w:1},'');
+  stopAll();show('watch');setMode('full');window.scrollTo(0,0);
+  $('#wt').textContent=item?.title||'লোড হচ্ছে…';$('#mt').textContent=item?.title||'';
+  $('#rel').innerHTML='';$('#wc').innerHTML='';$('#wd').hidden=true;
+  let s;
+  try{s=await api('/streams/'+enc(id))}
+  catch(e){if(my===tok)$('#wt').textContent='ভিডিও লোড করা যায়নি ('+e.message+')';return}
+  if(my!==tok)return;
+  S=s;S.id=id;
+  opts=(s.videoStreams||[]).filter(x=>!x.videoOnly&&x.url).sort((x,y)=>(y.height||parseInt(y.quality)||0)-(x.height||parseInt(x.quality)||0)).map(x=>({label:x.quality||(x.height+'p'),url:x.url}));
+  if(s.hls)opts.push({label:'অটো (HLS)',url:s.hls,hls:true});
+  const aus=(s.audioStreams||[]).filter(x=>x.url).sort((x,y)=>(y.bitrate||0)-(x.bitrate||0));
+  aUrl=(aus.find(x=>/mp4/.test(x.mimeType||''))||aus[0]||{}).url||'';
+  a.preload='metadata';if(aUrl)a.src=aUrl;else a.removeAttribute('src');
+  qsel.innerHTML=opts.map((o,k)=>`<option value="${k}">${esc(o.label)}</option>`).join('');
+  $('#wt').textContent=s.title||'';$('#mt').textContent=s.title||'';
+  if(!opts.length){$('#wt').textContent='এই ভিডিওর স্ট্রিম পাওয়া যায়নি';return}
+  loadVideo(opts[0],0,true);
+  fillInfo(s,id);setMS();
+  const h=LS('hist',[]).filter(x=>vidId(x.url)!==id);
+  h.push({url:'/watch?v='+id,title:s.title,thumbnail:s.thumbnailUrl,uploaderName:s.uploader,uploaderUrl:s.uploaderUrl,uploaderAvatar:s.uploaderAvatar,duration:s.duration,views:s.views,uploadedDate:s.uploadDate});
+  SV('hist',h.slice(-200));
+}
+function fillInfo(s,id){
+  const cid=chId(s.uploaderUrl);
+  $('#wc').innerHTML=`<img class="av" data-ch="${esc(cid)}" src="${esc(su(s.uploaderAvatar))}" alt=""><div class="grow"><b data-ch="${esc(cid)}" style="cursor:pointer">${esc(s.uploader)}</b><div class="s">${esc(fmtN(s.views))} ভিউ · ${esc(s.uploadDate||'')}${s.likes>=0?' · 👍 '+esc(fmtN(s.likes)):''}</div></div>`;
+  $('#wc').append(subBtn(cid,s.uploader,s.uploaderAvatar));
+  const html=(s.description||'').replace(/<br\s*\/?>/gi,'\n');
+  const txt=new DOMParser().parseFromString(html,'text/html').body.textContent;
+  const wd=$('#wd');wd.textContent=txt;wd.classList.remove('open');wd.hidden=!txt.trim();
+  const rel=$('#rel');rel.innerHTML='';
+  (s.relatedStreams||[]).filter(okItem).forEach(i=>rel.append(card(i)));
+}
+$('#wd').onclick=()=>$('#wd').classList.toggle('open');
+
+function minimize(){if(S&&pw.className==='full'){setMode('mini');show('list');requestAnimationFrame(()=>scrollTo(0,lastY))}}
+function expand(){if(S&&pw.className==='mini'){show('watch');setMode('full');scrollTo(0,0);if(history.state?.w!==1)history.pushState({w:1},'')}}
+function closePlayer(){tok++;stopAll();S=null;v.removeAttribute('src');v.load();a.removeAttribute('src');a.load();setMode('');show('list');requestAnimationFrame(()=>scrollTo(0,lastY))}
+$('#minb').onclick=()=>history.state?.w===1?history.back():minimize();
+$('#mx').onclick=e=>{e.stopPropagation();closePlayer()};
+$('#mp').onclick=e=>{e.stopPropagation();const x=el();x.paused?x.play():x.pause()};
+$('#mi').onclick=expand;
+$('#vbox').addEventListener('click',()=>{if(pw.className==='mini')expand()});
+window.addEventListener('popstate',()=>{if(S&&!$('#watch').hidden)minimize()});
+
+/* controls */
+$('#pipb').onclick=async()=>{
+  try{document.pictureInPictureElement?await document.exitPictureInPicture():await v.requestPictureInPicture()}
+  catch{alert('এই ব্রাউজারে PiP চালু করা যায়নি')}
+};
+qsel.onchange=()=>loadVideo(opts[qsel.value],el().currentTime,!audioMode&&!v.paused);
+function applyRate(){
+  [v,a].forEach(x=>{x.defaultPlaybackRate=x.playbackRate=rate;x.preservesPitch=true});
+  $('#rin').value=rate;
+  document.querySelectorAll('#rq .chip').forEach(c=>c.classList.toggle('on',parseFloat(c.dataset.r)===rate));
+}
+function setRate(x){x=parseFloat(x);if(!(x>0))return;rate=Math.min(4,Math.max(0.25,Math.round(x*100)/100));SV('rate',rate);applyRate()}
+[1,1.5,2,2.5,3].forEach(r=>{const b=document.createElement('button');b.className='chip';b.dataset.r=r;b.textContent=r+'x';b.onclick=()=>setRate(r);$('#rq').append(b)});
+$('#rin').onchange=()=>setRate($('#rin').value);
+$('#rm').onclick=()=>setRate(rate-0.25);
+$('#rp').onclick=()=>setRate(rate+0.25);
+v.addEventListener('loadedmetadata',applyRate);a.addEventListener('loadedmetadata',applyRate);
+
+/* ---------- audio mode / background playback ---------- */
+function toAudio(auto){
+  if(audioMode||!aUrl)return;
+  const t=v.currentTime,was=auto?wantPlay:!v.paused;
+  audioMode=true;autoAudio=!!auto;
+  if(!a.src)a.src=aUrl;
+  const go=()=>{a.currentTime=t;applyRate();if(was)a.play().catch(()=>{})};
+  if(a.readyState>=1)go();else a.addEventListener('loadedmetadata',go,{once:true});
+  v.pause();updBtn();
+}
+function toVideo(){
+  if(!audioMode)return;
+  const t=a.currentTime,was=!a.paused;
+  audioMode=false;autoAudio=false;a.pause();
+  v.currentTime=t;if(was)v.play().catch(()=>{});
+  updBtn();
+}
+$('#audb').onclick=()=>audioMode?toVideo():toAudio(false);
+$('#avid').onclick=toVideo;
+$('#aplay').onclick=()=>a.paused?a.play():a.pause();
+v.addEventListener('play',()=>{if(audioMode){toVideo();return}if(!document.hidden)wantPlay=true});
+v.addEventListener('pause',()=>{if(!document.hidden&&!audioMode&&!v.ended)wantPlay=false});
+document.addEventListener('visibilitychange',()=>{
+  if(!S)return;
+  if(document.hidden){if(!audioMode&&wantPlay&&!document.pictureInPictureElement)toAudio(true)}
+  else if(audioMode&&autoAudio)toVideo();
+});
+function syncIcon(){
+  $('#mp').textContent=el().paused?'▶':'⏸';
+  if('mediaSession' in navigator)try{navigator.mediaSession.playbackState=el().paused?'paused':'playing'}catch{}
+}
+[v,a].forEach(x=>{
+  ['play','pause'].forEach(ev=>x.addEventListener(ev,syncIcon));
+  x.addEventListener('ended',nextVideo);
+});
+function nextVideo(){
+  if(!S)return;
+  const i=(S.relatedStreams||[]).filter(okItem)[0];
+  if(i)play(vidId(i.url),i);
+}
+function setMS(){
+  if(!('mediaSession' in navigator)||!S)return;
+  try{
+    navigator.mediaSession.metadata=new MediaMetadata({title:S.title||'',artist:S.uploader||'',artwork:S.thumbnailUrl?[{src:S.thumbnailUrl,sizes:'512x512'}]:[]});
+    const h=(n,f)=>{try{navigator.mediaSession.setActionHandler(n,f)}catch{}};
+    h('play',()=>el().play());h('pause',()=>el().pause());
+    h('seekbackward',()=>{el().currentTime-=10});h('seekforward',()=>{el().currentTime+=10});
+    h('nexttrack',nextVideo);
+  }catch{}
+}
+
+/* ---------- settings ---------- */
+const dlg=$('#set');
+$('#setb').onclick=()=>{$('#curb').textContent=LS('base','—');$('#cust').value=LS('custom','');$('#mind').value=LS('minDur',180);dlg.showModal()};
+$('#cl').onclick=()=>dlg.close();
+$('#sv').onclick=()=>{SV('custom',$('#cust').value.trim());SV('minDur',Math.max(0,parseInt($('#mind').value)||0));localStorage.removeItem('base');pool=null;bad.clear();dlg.close();$('#nav .chip.on')?.click()};
+
+/* start */
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+applyRate();
+$('#nav .chip').click();
+</script>
+</body>
+</html>
